@@ -1,126 +1,16 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SmartScanner Dashboard</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0d1117;
-      color: #c9d1d9;
-      display: flex;
-      justify-content: center;
-      padding: 2rem;
-    }
-    .container {
-      width: 100%;
-      max-width: 1000px;
-      background-color: #161b22;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #0ef;
-    }
-    h1, h3 {
-      color: #58a6ff;
-      margin-bottom: 1rem;
-    }
-    .ali{
-      color: #58a6ff;
-      margin-bottom: 1rem;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-    }
-    input[type="text"], select, button {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #21262d;
-      color: #c9d1d9;
-    }
-    button {
-      background-color: #238636;
-      cursor: pointer;
-      margin-top: 1.5rem;
-    }
-    button:hover {
-      background-color: #2ea043;
-    }
-    .checkbox {
-      display: flex;
-      align-items: center;
-      margin-top: 1rem;
-    }
-    .checkbox input {
-      margin-right: 10px;
-    }
-    .spinner {
-      display: none;
-      justify-content: center;
-      margin-top: 1rem;
-    }
-    .loader {
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #58a6ff;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      border: 1px solid #30363d;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #21262d;
-    }
-    ul {
-      padding-left: 1.5rem;
-    }
-    #searchBox {
-      margin-top: 1rem;
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 5px;
-      background-color: #0d1117;
-      border: 1px solid #30363d;
-      color: #c9d1d9;
-    }
-    .pdf-button {
-      width: 100%;
-      padding: 1rem;
-      font-size: 1rem;
-      margin-top: 2rem;
-      background-color: #0366d6;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .pdf-button:hover {
-      background-color: #2188ff;
-    }
-  </style>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <div class="container">
     <h1>🔍 SmartScanner Dashboard</h1>
-    <p class="ali">By: Ali ALwaili</p>
+    <p class="ali">By: Ali Alwaili</p>
 
     <label for="target">Target (IP or Domain)</label>
     <input type="text" id="target" placeholder="example.com" required />
@@ -138,26 +28,30 @@
 
     <div class="checkbox">
       <input type="checkbox" id="subdomainToggle" />
-      <label for="subdomainToggle">Enumerate Subdomains</label>
+      <label for="subdomainToggle">Search for Subdomains</label>
     </div>
 
-    <button onclick="runScan()">Run Scan</button>
+    <button id="runButton">Run Scan</button>
+
+    <div id="progressBar" style="display:none; width: 100%; background-color: #21262d; height: 20px; border-radius: 5px; overflow: hidden; margin-top: 1rem; position: relative;">
+      <div id="progressBarInner" style="height: 100%; width: 0%; background-color: #58a6ff;"></div>
+      <span id="progressPercent" style="position: absolute; left: 50%; top: 0; transform: translateX(-50%); color: white; font-size: 0.9rem; line-height: 20px;">0%</span>
+    </div>
+    
 
     <div class="spinner" id="spinner">
       <div class="loader"></div>
     </div>
 
     <div class="result" id="result" style="display:none;">
-
-      <!-- WHOIS Info -->
-      <div id="whoisSection" style="margin-top: 2rem;">
+      <div id="whoisSection">
         <h3>🧾 WHOIS Information</h3>
         <table id="whoisTable"></table>
       </div>
 
-      <!-- Ports Table -->
       <label for="searchBox">Search Ports:</label>
       <input type="text" id="searchBox" onkeyup="filterResults()" placeholder="Search port, service, or state..." />
+
       <table id="resultsTable">
         <thead>
           <tr>
@@ -170,97 +64,17 @@
         <tbody id="resultsBody"></tbody>
       </table>
 
-      <!-- Subdomains -->
-      <div id="subdomainSection" style="margin-top: 2rem;">
+      <div id="subdomainSection">
         <h3>🔗 Subdomains</h3>
         <ul id="subdomainList"></ul>
       </div>
 
-      <!-- Download PDF Button -->
       <a href="/download-report" download>
         <button class="pdf-button">⬇️ Download PDF Report</button>
       </a>
     </div>
   </div>
 
-  <script>
-    function runScan() {
-      const target = document.getElementById('target').value;
-      const mode = document.getElementById('scanMode').value;
-      const customPorts = document.getElementById('customPorts').value;
-      const runSubdomain = document.getElementById('subdomainToggle').checked;
-      const spinner = document.getElementById('spinner');
-      const resultSection = document.getElementById('result');
-      const tableBody = document.getElementById('resultsBody');
-      const whoisTable = document.getElementById('whoisTable');
-      const subList = document.getElementById('subdomainList');
-
-      if (!target) {
-        alert("Please enter a target to scan.");
-        return;
-      }
-
-      tableBody.innerHTML = '';
-      whoisTable.innerHTML = '';
-      subList.innerHTML = '';
-      resultSection.style.display = 'none';
-      spinner.style.display = 'flex';
-
-      fetch('/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target, mode, custom_ports: customPorts, run_subdomain: runSubdomain })
-      })
-      .then(async response => {
-        spinner.style.display = 'none';
-        resultSection.style.display = 'block';
-
-        const data = await response.json();
-
-        // WHOIS Table
-        for (const [key, value] of Object.entries(data.whois || {})) {
-          const row = document.createElement('tr');
-          row.innerHTML = `<th>${key}</th><td>${value}</td>`;
-          whoisTable.appendChild(row);
-        }
-
-        // Port Scan Results
-        if (Array.isArray(data.scan_results)) {
-          data.scan_results.forEach(result => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${result.port}</td>
-              <td>${result.state}</td>
-              <td>${result.service}</td>
-              <td>${result.version}</td>
-            `;
-            tableBody.appendChild(row);
-          });
-        }
-
-        // Subdomain List
-        if (Array.isArray(data.subdomains)) {
-          data.subdomains.forEach(sub => {
-            const li = document.createElement('li');
-            li.textContent = sub;
-            subList.appendChild(li);
-          });
-        }
-      })
-      .catch(error => {
-        spinner.style.display = 'none';
-        resultSection.style.display = 'block';
-        document.getElementById('resultsBody').innerHTML = `<tr><td colspan="4">Scan failed: ${error.message}</td></tr>`;
-      });
-    }
-
-    function filterResults() {
-      const input = document.getElementById("searchBox").value.toLowerCase();
-      const rows = document.querySelectorAll("#resultsBody tr");
-      rows.forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(input) ? "" : "none";
-      });
-    }
-  </script>
+  <script src="/static/script.js"></script>
 </body>
 </html>
