@@ -1,97 +1,127 @@
-# 🔍 SmartScanner
+# 🛡️ SmartScanner
 
-**By Ali Alwaili**
+**SmartScanner** is a web-based information gathering and network scanning tool developed in Python with Flask. It provides real-time WHOIS lookup, port scanning, subdomain enumeration using your own script, and professional PDF reporting — all in one dashboard.
 
-SmartScanner is a professional-grade, web-based port scanning and reconnaissance tool built with Python and Flask. It allows users to scan IP addresses and domains using multiple scanning strategies, visualize results in real-time on a beautiful dark-themed dashboard, and interactively search through open ports, services, and their states.
-
----
-
-## 🚀 Features
-
-- 🌐 Web-based interface (Flask + HTML/CSS/Vanilla JS)
-- 🎨 Clean dark UI inspired by modern security dashboards
-- 🧠 WHOIS lookup integration
-- 🔍 Scan results displayed in interactive tables
-- 🔎 Live search/filter through scan results
-- 🕓 Scan time tracking
-- ⚙️ Four scan modes for flexibility and performance
+> 👨‍💻 Made by **Ali Alwaili**
 
 ---
 
-## 🧪 Scan Modes Explained
-
-SmartScanner supports **4 powerful scan modes**, each designed for different levels of depth and performance:
-
-| Mode        | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `quick`     | ✅ Scans **top 50 common ports** quickly. Good for everyday basic recon.     |
-| `full`      | 📜 Scans **all 65,535 ports**. Thorough but takes more time.                 |
-| `fast`      | ⚡ Scans **top ports only** with **no OS or version detection**. Fastest.     |
-| `aggressive`| 🔥 Includes **service versioning + OS detection** on top 50 ports. Deepest.  |
-
-You can choose your mode using the dropdown on the dashboard UI.
-
----
-
-## 📂 Project Structure
+## 📁 Project Structure
 
 ```
-SmartScanner/
-├── scanner.py       # Flask backend logic
+SMARTSCANNER/
 ├── templates/
-│   └── index.html             # Main UI with interactive dashboard
-├── README.md                  # This documentation
+│   └── index.html        → Web UI (dashboard)
+├── scanner.py            → Main Flask server
+├── subdomain.py          → Your custom subdomain scanner
+├── wordlist1.txt         → Wordlist used for brute-forcing subdomains
+├── report.pdf            → Auto-generated PDF scan report
+└── README.md             → Project documentation
 ```
 
 ---
 
-## 🛠️ Requirements
+## 🔧 Features
 
-- Python 3.7+
-- Nmap (must be installed on your system)
+- 🔍 **Live Web Dashboard**
+  - Enter domain/IP to scan
+  - Select scan mode (Quick, Full, Fast, Aggressive)
+  - Optional port range input (e.g., `20-1000`, `80,443`)
+  - Enable/disable subdomain enumeration
+  - Real-time scan results: WHOIS, open ports, subdomains
+  - Searchable port scan table
+  - Download PDF Report button
 
-### Install dependencies:
-```bash
-pip install flask python-nmap python-whois
-```
+- 🧾 **WHOIS Lookup**
+  - Auto extracts registrar, organization, country, creation and expiry dates
 
-### Make sure Nmap is installed:
-```bash
-nmap --version
-```
-If not, install via your package manager (e.g. `sudo apt install nmap` on Ubuntu).
+- 🌐 **Subdomain Enumeration**
+  - Uses your own `subdomain.py`
+  - Output is displayed directly on the dashboard
+  - Brute-forces using `wordlist1.txt`
+
+- 📡 **Port Scanning (via Nmap)**
+  - `Quick`: Top 50 ports
+  - `Full`: All ports
+  - `Fast`: Top ports without detection
+  - `Aggressive`: Includes OS & service detection
+  - Works with custom ports (e.g., `21,22,443,8080`)
+
+- 📄 **PDF Reporting**
+  - Automatically generates `report.pdf` after scan
+  - Contains:
+    - Target details
+    - Scan mode and time
+    - WHOIS data
+    - Port scan results
+    - Subdomain list
+  - Downloadable from dashboard
 
 ---
 
-## 🧑‍💻 Usage
+## ⚙️ Setup Instructions
 
-1. Clone the repository
-2. Navigate to the project folder
-3. Run the Flask app:
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/SmartScanner
+cd SmartScanner
+```
+
+### 2. Install required Python packages
+
+```bash
+pip install flask nmap python-whois reportlab
+```
+
+### 3. Install Nmap
+
+Make sure `nmap` is installed and accessible from the terminal:
+
+```bash
+# Linux
+sudo apt install nmap
+
+# Windows
+https://nmap.org/download.html
+```
+
+---
+
+## ▶️ Run the Application
 
 ```bash
 python scanner.py
 ```
 
-4. Open your browser and go to:
+Then open your browser and visit:
+
 ```
 http://127.0.0.1:5000
 ```
 
 ---
 
-## 📈 Output Example
-- Displays all scan results in a live, interactive table
-- Filter results by typing any keyword (port number, service name, etc.)
+## 📌 Notes
+
+- Ensure `scanner.py` and `subdomain.py` are in the same folder.
+- `subdomain.py` must accept a domain name as input and print subdomains (one per line).
+- The `report.pdf` is overwritten each time a new scan is completed.
+- You can replace `wordlist1.txt` with your custom wordlist.
 
 ---
 
-## 🧾 License
-This project is provided for educational and ethical penetration testing purposes **only**. Unauthorized scanning is illegal.
+## 🖼 Screenshot
 
-**Created and maintained by Ali Alwaili** ✨
+![SmartScanner Screenshot](Screenshot%202025-04-02%20171958.png)
 
 ---
 
-Feel free to contribute, customize, and expand SmartScanner!
-# smartscanner
+## 📜 License
+
+This project is licensed under the MIT License.  
+Free to use, customize, and distribute.
+
+---
+
+Made by **Ali Alwaili**
