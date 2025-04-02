@@ -111,11 +111,6 @@ http://127.0.0.1:5000
 
 ---
 
-## 🖼 Screenshot
-
-![SmartScanner Screenshot](Screenshot%202025-04-02%20171958.png)
-
----
 
 ## 📜 License
 
