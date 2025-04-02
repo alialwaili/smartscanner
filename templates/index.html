@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartScanner Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      background-color: #161b22;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #0ef;
+    }
+    h1 {
+      color: #58a6ff;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .ali {
+      color: #58a6ff;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input[type="text"], select, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #21262d;
+      color: #c9d1d9;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #238636;
+      cursor: pointer;
+      margin-top: 1.5rem;
+    }
+    button:hover {
+      background-color: #2ea043;
+    }
+    .spinner {
+      display: none;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .loader {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #58a6ff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .result {
+      margin-top: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #30363d;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #21262d;
+    }
+    #searchBox {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 5px;
+      background-color: #0d1117;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 SmartScanner Dashboard</h1>
+    <p class="ali"> By: Ali Alwaili</p>
+
+    <label for="target">Target (IP or Domain)</label>
+    <input type="text" id="target" placeholder="example.com" required>
+
+    <label for="scanMode">Scan Mode</label>
+    <select id="scanMode">
+      <option value="quick">Quick Scan (Top 50 Ports)</option>
+      <option value="full">Full Scan (All Ports)</option>
+      <option value="fast">Fast Scan (No Detection)</option>
+      <option value="aggressive">Aggressive Scan (OS + Service Detection)</option>
+    </select>
+
+    <button onclick="runScan()">Run Scan</button>
+
+    <div class="spinner" id="spinner">
+      <div class="loader"></div>
+    </div>
+
+    <div class="result" id="result" style="display:none;">
+      <label for="searchBox">Search Results:</label>
+      <input type="text" id="searchBox" onkeyup="filterResults()" placeholder="Search port, service, or state...">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Port</th>
+            <th>State</th>
+            <th>Service</th>
+            <th>Version</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function runScan() {
+      const target = document.getElementById('target').value;
+      const mode = document.getElementById('scanMode').value;
+      const spinner = document.getElementById('spinner');
+      const resultSection = document.getElementById('result');
+      const tableBody = document.getElementById('resultsBody');
+
+      if (!target) {
+        alert("Please enter a target to scan.");
+        return;
+      }
+
+      tableBody.innerHTML = '';
+      resultSection.style.display = 'none';
+      spinner.style.display = 'flex';
+
+      fetch('/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: target, mode: mode })
+      })
+      .then(response => response.json())
+      .then(data => {
+        spinner.style.display = 'none';
+        resultSection.style.display = 'block';
+
+        data.scan_results.forEach(result => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${result.port}</td>
+            <td>${result.state}</td>
+            <td>${result.service}</td>
+            <td>${result.version}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      })
+      .catch(error => {
+        spinner.style.display = 'none';
+        resultSection.style.display = 'block';
+        document.getElementById('resultsBody').innerHTML = '<tr><td colspan="4">Scan failed: ' + error.message + '</td></tr>';
+      });
+    }
+
+    function filterResults() {
+      const input = document.getElementById("searchBox");
+      const filter = input.value.toLowerCase();
+      const rows = document.querySelectorAll("#resultsBody tr");
+
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    }
+  </script>
+</body>
+</html>
